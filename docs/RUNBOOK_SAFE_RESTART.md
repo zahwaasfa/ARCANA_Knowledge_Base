@@ -14,5 +14,4 @@ Env baru (opsional, ada default): `VECTOR_MAX_CANDIDATES=300`, `VECTOR_CANDIDATE
 Perubahan hanya kode; skema, data, dan embedding tidak diubah (tidak perlu ingest ulang).
 
 Tes lokal (tanpa Neo4j/LLM): `pip install -r requirements.txt pytest && python -m pytest -q tests`.
-Verifikasi live setelah restart: ulangi pertanyaan IKN pada `/kb/ask` dan `/kb/retrieve/cross-document`; cek `timings_ms.retrieval`,
 `retrieval.vector_skipped`, `retrieval.dropped`, dan `graph_links`.

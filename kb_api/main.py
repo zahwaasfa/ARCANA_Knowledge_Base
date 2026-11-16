@@ -12,7 +12,7 @@ import os
 from fastapi import FastAPI, HTTPException, Depends, Header
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from kb import cross_document, rag, retrieval, search
+from kb import rag, retrieval, search
 from kb.config import S
 from kb.db import DB
 
@@ -47,8 +47,6 @@ class QueryReq(BaseModel):
     question: str = Field(min_length=3, max_length=1000)
     top_k: int = Field(5, ge=1, le=15)
     document_id: str | None = Field(None, min_length=1, max_length=200)
-    # `graph` and `vector` remain accepted for old clients, but the compatibility
-    # route now runs the unified Graph-first hybrid pipeline for every request.
     mode: str = Field("hybrid", pattern="^(hybrid|graph|vector)$",
                       description="Internal retrieval mode; public answer requests use Hybrid Graph + Vector.")
     context_doc_ids: list[str] = Field(default_factory=list, max_length=5)
@@ -108,28 +106,6 @@ class HealthResp(BaseModel):
     documents: dict = Field(default_factory=dict)
     nodes: dict = Field(default_factory=dict)
     indexes_online: list[str] = Field(default_factory=list)
-
-
-class CrossDocumentReq(BaseModel):
-    question: str = Field(min_length=3, max_length=1000)
-    top_k: int = Field(8, ge=1, le=30)
-    document_ids: list[str] = Field(default_factory=list, max_length=100)
-    document_type: str | None = Field(None, max_length=100)
-
-
-@app.post("/kb/retrieve/cross-document")
-def cross_document_retrieve(req: CrossDocumentReq):
-    """Return evidence spanning documents and the graph links used to expand retrieval."""
-    started = time.perf_counter()
-    try:
-        result = cross_document.retrieve(get_db(), req.question, req.top_k,
-                                         corpus=None, document_ids=req.document_ids or None,
-                                         document_type=req.document_type)
-        result["latency_ms"] = round((time.perf_counter() - started) * 1000, 2)
-        return result
-    except Exception as exc:  # noqa: BLE001
-        raise HTTPException(503, detail={"status": "RETRIEVAL_ERROR",
-                         "message": rag.mask_secrets(f"{type(exc).__name__}: {exc}")[:500]})
 
 
 class Citation(BaseModel):

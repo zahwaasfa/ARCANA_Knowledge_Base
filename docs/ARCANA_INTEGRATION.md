@@ -4,7 +4,6 @@
 
 The service is FastAPI at `kb_api.main:app`. OpenAPI is served at `/docs` and `/openapi.json`. Use `POST /kb/ask` with `question`, `top_k`, and optional `document_id` or `context_doc_ids`. It runs the unified Graph + Vector retrieval flow and returns the generated answer, citations, evidence, retrieval trace, timings, and source document IDs.
 
-`POST /kb/retrieve/cross-document` is the independent evidence-retrieval operation. Example request:
 
 ```json
 {"question":"How does the policy objective connect to the program implementation?","top_k":8}
